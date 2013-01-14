@@ -1,0 +1,18 @@
+extends layout
+block script
+    script(src='/socket.io/socket.io.js')
+    script(src='js/moment.min.js')
+    script
+        var socket = io.connect('http://localhost:5000');
+        document.getElementById('elapsedTime').innerHTML = 
+        socket.on('newgame', function(data) {
+            document.getElementById('currGameCount').innerHTML = data;
+        });    
+
+block content 
+    h1 Admin Console
+    p Yay admin console :)
+    h3 Number of Current Games: 
+    #currGameCount #{currGameCount}
+    h3 Games
+    #elapsedTime #{elapsedTime.fromNow(true)}

@@ -1,13 +1,16 @@
 {
   "name": "PHTNode",
+  "description": "Backend REST system for tracking games for PowerHourTimer.com",
   "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "start": "node app"
-  },
   "dependencies": {
-    "express": "3.0.5",
-    "jade": "*",
-    "socket.io": "*"
+    "express": "3.x",
+    "moment": "latest",
+    "redis":"latest",
+    "jade":"latest",
+    "socket.io":"latest"
+  },
+  "engines": {
+    "node": "0.8.x",
+    "npm": "1.1.x"
   }
 }
