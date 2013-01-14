@@ -8,7 +8,7 @@ block script
         document.getElementById('elapsedTime').innerHTML = 
         socket.on('newgame', function(data) {
             document.getElementById('currGameCount').innerHTML = data.size;
-            $('<li>' + data.id + '</li>').insertAfter('#currGameIdList');
+            $('#currGameIdList').append('<li>' + data.id + '</li>');
         });    
 
 block content 
@@ -17,6 +17,6 @@ block content
     h3 Number of Current Games: 
     #currGameCount #{games.length}
     h3 Games
-    ul#currGameIdList 
+    #currGameIdList 
         each game in games
             li= game
