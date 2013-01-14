@@ -2,17 +2,21 @@ extends layout
 block script
     script(src='/socket.io/socket.io.js')
     script(src='js/moment.min.js')
+    script(src='js/jquery-1.8.3.min.js')
     script
         var socket = io.connect('http://localhost:5000');
         document.getElementById('elapsedTime').innerHTML = 
         socket.on('newgame', function(data) {
-            document.getElementById('currGameCount').innerHTML = data;
+            document.getElementById('currGameCount').innerHTML = data.size;
+            $('<li>' + data.id + '</li>').insertAfter('#currGameIdList');
         });    
 
 block content 
     h1 Admin Console
     p Yay admin console :)
     h3 Number of Current Games: 
-    #currGameCount #{currGameCount}
+    #currGameCount #{games.length}
     h3 Games
-    #elapsedTime #{elapsedTime.fromNow(true)}
+    ul#currGameIdList 
+        each game in games
+            li= game

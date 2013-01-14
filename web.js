@@ -52,32 +52,27 @@ app.post('/game', function(req, res) {
     game.name = name;
     game.target = target;
     redis.set(game.id, JSON.stringify(game));
-    redis.incr('currentgamecount');
-    redis.get('currentgamecount', function(error, reply) {
+    redis.sadd('currentGameIds', game.id);
+    redis.scard('currentGameIds', function(error, reply) {
         if(error) {
             console.log(error);
         }
-        io.sockets.emit('newgame', reply);
+        var gameStats = {'size':reply, 'id':game.id};
+        console.log('sending new gamestats ' + gameStats);
+        io.sockets.emit('newgame', gameStats);
     });
     res.send(JSON.stringify(game));
 });
 
 app.get('/admin', function(req, res) {
-    currGames = [];
     redis.smembers('currentGameIds', function(error, reply) {
         if(error) {
             console.log('REDIS Error: ' + error);
             throw error;            
         } 
-        reply.forEach(function(entry) {
-            redis.get(entry, funtion(error, res) {
-                if(!error) {
-                    currGames.push(res)
-                }
-            });
-        });
+        console.log('ids: ' + reply);
+        res.render('admin', {games:reply});
     });
-    res.render('admin', {games:currGames});
 });
 
 app.put('/game/:id/complete', function(req, res) {
