@@ -8,15 +8,19 @@ block script
         document.getElementById('elapsedTime').innerHTML = 
         socket.on('newgame', function(data) {
             document.getElementById('currGameCount').innerHTML = data.size;
-            $('#currGameIdList').append('<li>' + data.id + '</li>');
+            $('#currGameIdList').append('<li>' + data.game.id + '</li>');
         });    
 
 block content 
     h1 Admin Console
     p Yay admin console :)
     h3 Number of Current Games: 
-    #currGameCount #{games.length}
+    - if (typeof(games) !== 'undefined'){
+        #currGameCount #{games.length}
+    - }
     h3 Games
     #currGameIdList 
+    - if (typeof(games) !== 'undefined'){
         each game in games
-            li= game
+            li= game.start
+    - }

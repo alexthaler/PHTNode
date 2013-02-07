@@ -25,19 +25,25 @@ if (process.env.REDISTOGO_URL) {
     var redis = require("redis").createClient();
 }
 
+//Default timeout for redis keys will be set to 70s
+var defaultTimeout = 60 * 70;
+
 redis.on("error", function (err) {
     console.log("Error " + err);
 });
 
 app.get('/game/:id?', function(req, res, next) {
   var id = req.params.id;
-  responseObj = {};
   if(!id) {
-    res.send('game not found!');
-  }   
-  redis.get(id, function(err, reply) {
-    console.log('found game ' + reply.toString());
-    res.send(reply.toString());
+    res.send(400);
+  }
+  redis.get('game:'+id, function(err, reply) {
+    if(reply == null) {
+        res.send(404);
+    } else {
+        console.log('found game ' + reply.toString());
+        res.send(reply.toString());
+    }
   });
   return;
 });
@@ -51,13 +57,13 @@ app.post('/game', function(req, res) {
     game.start = moment.utc();
     game.name = name;
     game.target = target;
-    redis.set(game.id, JSON.stringify(game));
-    redis.sadd('currentGameIds', game.id);
-    redis.scard('currentGameIds', function(error, reply) {
+    redis.set('game:'+game.id, JSON.stringify(game));
+    redis.expire('game:'+game.id, 10);
+    redis.keys('game:*', function(error, reply) {
         if(error) {
             console.log(error);
         }
-        var gameStats = {'size':reply, 'id':game.id};
+        var gameStats = {'size':reply.length, 'game':game};
         console.log('sending new gamestats ' + gameStats);
         io.sockets.emit('newgame', gameStats);
     });
@@ -65,13 +71,15 @@ app.post('/game', function(req, res) {
 });
 
 app.get('/admin', function(req, res) {
-    redis.smembers('currentGameIds', function(error, reply) {
-        if(error) {
-            console.log('REDIS Error: ' + error);
-            throw error;            
-        } 
-        console.log('ids: ' + reply);
-        res.render('admin', {games:reply});
+    redis.keys('game:*', function(error, data){
+        console.log(data);
+        for (var i = 0; i < data.length; i++){
+            console.log(i + ' - ' + data[i]);           
+        }
+        redis.mget(data, function(error, data) {
+            console.log('sending games - ' + data);
+            res.render('admin', {games:data});
+        }); 
     });
 });
 
