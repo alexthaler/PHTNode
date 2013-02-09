@@ -1,5 +1,7 @@
 var uuid = require('node-uuid'),
-    moment = require('moment');
+    moment = require('moment'),
+    mongojs = require('mongojs'),
+    model = require('/../model/model.js');
 
 exports.allGames = function(req, res, db) {
     db.games.find({}, function(err, games) {

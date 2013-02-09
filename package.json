@@ -7,10 +7,16 @@
     "moment": "latest",
     "jade":"latest",
     "mongojs":"latest",
-    "node-uuid":"latest"
+    "node-uuid":"latest",
+    "should":"latest",
+    "mocha":"latest"
   },
   "engines": {
     "node": "0.8.x",
     "npm": "1.1.x"
+  },
+  "scripts" : {
+    "test":"mocha"
   }
+
 }
