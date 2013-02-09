@@ -1,7 +1,7 @@
 var uuid = require('node-uuid'),
     moment = require('moment'),
     mongojs = require('mongojs'),
-    model = require('/../model/model.js');
+    model = require('../model/model');
 
 exports.allGames = function(req, res, db) {
     db.games.find({}, function(err, games) {
@@ -46,9 +46,7 @@ exports.removeExpiredGames = function(req, res, db) {
             res.json(500);
         } else {
             games.forEach(function(game) {
-                var now = moment();
-                var hourDiff = Math.abs(moment(game.started).diff(now, 'hour'));
-                if (game.completed || hourDiff > 4) {
+                if (model.isExpired(game)) {
                     deleteGameInternal(game.gameId, db);
                 }
             });
