@@ -6,7 +6,7 @@
     "express": "3.x",
     "moment": "latest",
     "jade":"latest",
-    "mongolian":"latest"
+    "mongojs":"latest"
   },
   "engines": {
     "node": "0.8.x",
