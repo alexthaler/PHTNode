@@ -14,31 +14,42 @@ function isEmptyObject(obj) {
   return !Object.keys(obj).length;
 }
 
+//Get methods
+
 app.get('/api/games', function(req, res) {
     api.allGames(req, res, db);
 });
 
-app.post('/api/game', function (req, res) {
-    if(isEmptyObject(req.body)) {
+app.get('/api/game/:id', function(req, res) {
+    api.getGame(req, res, db);
+})
+
+//Create Update
+
+app.post('/api/game', function(req, res) {
+    if (isEmptyObject(req.body)) {
         console.log(req.body + " is not valid json.  Sending 400.");
         res.json(400);
     }
     api.addGame(req, res, db);
 });
 
-app.put('/api/game', function (req, res) {
-    if(isEmptyObject(req.body)) {
+app.put('/api/game/:id/complete', function(req, res) {
+    if (isEmptyObject(req.body)) {
         console.log(req.body + " is not valid json.  Sending 400.");
         res.json(400);
     }
-    db.games.update(req.body, function(err, game) {
-        if (err || !game) {
-            console.log("Game not saved!");
-            res.json(500);
-        } else {
-            res.json(game, 204)
-        }
-    });
+    api.completeGame(req, res, db);
+});
+
+//Delete and Cleanup
+
+app.del('/api/game/:id', function(req, res) {
+    api.deleteGame(req, res, db);
+});
+
+app.put('/api/game/removecompleted', function(req, res) {
+    api.removeExpiredGames(req, res, db);
 });
 
 var port = process.env.PORT || 5000;

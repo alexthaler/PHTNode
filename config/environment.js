@@ -2,7 +2,7 @@ module.exports = function(app, express){
     app.configure(function() {
         app.use(express.logger());
         app.use(express.bodyParser()); 
-        app.use(express.static(__dirname + '/public')); 
+        app.use(express.static(__dirname + '/../public')); 
     });
 
     app.configure('development', function() {
