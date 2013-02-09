@@ -1,6 +1,4 @@
-var uuid = require('node-uuid'),
-    moment = require('moment'),
-    mongojs = require('mongojs'),
+var mongojs = require('mongojs'),
     model = require('../model/model');
 
 exports.allGames = function(req, res, db) {
@@ -27,9 +25,7 @@ exports.getGame = function(req, res, db) {
 
 exports.addGame = function(req, res, db) {
     var game = req.body;
-    game.started = moment().format();
-    game.gameId = uuid.v1();
-    game.completed = false;
+    game = model.initialize(game);
     db.games.save(req.body, function(err, game) {
         if (err || !game) {
             console.log("Game not saved!");
