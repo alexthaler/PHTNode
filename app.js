@@ -3,7 +3,7 @@ var express = require('express'),
     moment = require('moment'),
     api = require('./routes/api');
 
-var databaseUrl = "pht-database";
+var databaseUrl = process.env.MONGOLAB_URI || "mongodb://localhost/pht-database";
 var collections = ["games"];
 var db = mongojs.connect(databaseUrl, collections);
 
