@@ -22,7 +22,11 @@ app.get('/api/games', function(req, res) {
 
 app.get('/api/game/:id', function(req, res) {
     api.getGame(req, res, db);
-})
+});
+
+app.get('/api/game/:name', function(req, res) {
+    api.getGameByName(req, res, db);
+});
 
 //Create Update
 
@@ -48,7 +52,7 @@ app.del('/api/game/:id', function(req, res) {
     api.deleteGame(req, res, db);
 });
 
-app.put('/api/game/removecompleted', function(req, res) {
+app.put('/api/games/removecompleted', function(req, res) {
     api.removeExpiredGames(req, res, db);
 });
 

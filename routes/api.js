@@ -23,6 +23,17 @@ exports.getGame = function(req, res, db) {
     });
 }
 
+exports.getGameByName = function(req, res, db) {
+    db.games.find({name:req.params.name}, function(err, game) {
+        if (err || !game) {
+            console.log('Game ' + req.params.name + ' not found.');
+            res.json(500);
+        } else {
+            req.json(game, 200);
+        }
+    });
+}
+
 exports.addGame = function(req, res, db) {
     var game = req.body;
     game = model.initialize(game);

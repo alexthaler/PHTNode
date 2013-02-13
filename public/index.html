@@ -1,8 +1,49 @@
-<html>
-<body>
-    <head>
-        <title>PHTNode</title>
-    </head>
-    This page does nothing, you might be in the wrong place...
-</body>
-</html>
+<!doctype html>
+<html lang="en" ng-app="phtModule">
+  <head>
+    <title>PowerHourTimer.com</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.4/angular.min.js"></script>
+    <script src="http://documentcloud.github.com/underscore/underscore-min.js"></script>
+    <script src="js/angular-pht.js"></script>
+    <script src="js/moment.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+    <div class="row">
+        <div class="span12">
+            <div style="margin:auto" ng-controller="GameClockController">
+                <h2> Current Game - {{game.name}} </h2>
+                Start time = {{game.started}} <br>
+                Clock: {{gameClockMinutes}}:{{gameClockSeconds}} <br>
+                <button ng-click="startGame();">Start</button>
+                <button ng-click="pauseGame();">Pause</button>
+                <button ng-click="resumeGame();">Resume</button>
+            </div>
+        </div>
+    </div>
+    <div class="row"> 
+        <div class="span6">
+            <div ng-controller="GameController">
+                <h3>Create a new Game</h3>
+                <input ng-model="newGameName" size="30" placeholder="Game Name"/>
+                <button ng-click="createGame(newGameName);">Create Game</button>
+            </div>
+        </div>
+        <div class="span6">
+            <div ng-controller="GameController">
+                <h3>Games:</h3>
+                <select id="currentGames" size="8">
+                    <option ng-repeat="game in currentGames">
+                        {{game.name}}
+                    </option> 
+                </select>
+                <button ng-click="joinGame();">Join</button>
+            </div>
+        </div>
+    </div>
+  </body>
+</html> 

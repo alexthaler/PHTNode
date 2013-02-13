@@ -1,7 +1,7 @@
 //Helper methods for the model
 var moment = require('moment'), 
     uuid = require('node-uuid'),
-    expiryMinutes = (4 * 60) + 1;
+    expiryMinutes = (2 * 60) + 1;
 
 exports.isExpired = function(game) {
     var now = moment();
@@ -10,6 +10,9 @@ exports.isExpired = function(game) {
 }
 
 exports.initialize = function(game) {
+    if (game.target === undefined ) {
+        game.target = 60
+    }
     game.started = moment().format();
     game.gameId = uuid.v1();
     game.completed = false;
