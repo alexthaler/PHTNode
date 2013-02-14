@@ -3,6 +3,9 @@ phtModule.factory('gameService', function($rootScope) {
     return {
         updateGame: function(game) {
             $rootScope.$broadcast('updateGameInformation', game);
+        },
+        refreshGameList: function() {
+            $rootScope.$broadcast('refreshGameListDisplay');
         }
     };
 });
@@ -48,19 +51,20 @@ function GameController($scope, $http, gameService) {
 
     $http.put('/api/games/removecompleted').success(function() {});
 
-    function refreshGameList() {
-        $http({method: 'GET', url: '/api/games'}).
-            success(function(data, status, headers, config) {
-                for (var i=0; i<data.length; i++) {
-                    if(data[i].name) {
-                        $scope.currentGames.push(data[i]);
-                    }
+    $scope.$on('refreshGameListDisplay', function() {
+        var newGameList = [];
+        console.log('updating list of games');
+        $http.get('/api/games').success(function(data) {
+            for (var i=0; i<data.length; i++) {
+                if(data[i].name) {
+                    newGameList.push(data[i]);
                 }
-            }).
-            error(function(data, status, headers, config) {
-                currentGames = [{name:"Error getting games!!"}];
-            });
-    }
+            }
+        });
+        $scope.$apply(function() {
+            $scope.currentGames = newGameList;
+        })
+    });
 
     $scope.joinGame = function() {
         var e = document.getElementById('currentGames');
@@ -70,10 +74,12 @@ function GameController($scope, $http, gameService) {
     $scope.createGame = function(gameName) {
         $http.post('/api/game', {name: gameName}).success(function(game) {
             gameService.updateGame(game);
+            gameService.refreshGameList();
         });
+        $scope.newGameName = '';
     }
 
-    refreshGameList();
+    gameService.refreshGameList();
 
 }
 

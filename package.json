@@ -8,7 +8,8 @@
     "mongojs":"latest",
     "node-uuid":"latest",
     "should":"latest",
-    "mocha":"latest"
+    "mocha":"latest",
+    "socket.io":"latest"
   },
   "engines": {
     "node": "0.8.x",

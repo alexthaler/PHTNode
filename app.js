@@ -7,7 +7,9 @@ var databaseUrl = process.env.MONGOLAB_URI || "mongodb://localhost/pht-database"
 var collections = ["games"];
 var db = mongojs.connect(databaseUrl, collections);
 
-var app = express();
+var app = express(), 
+    server = require('http').createServer(app), 
+    io = require('socket.io').listen(server);
 var environment = require('./config/environment')(app, express);
 
 function isEmptyObject(obj) {
@@ -56,7 +58,11 @@ app.put('/api/games/removecompleted', function(req, res) {
     api.removeExpiredGames(req, res, db);
 });
 
+io.sockets.on('connection', function (socket) {
+  socket.emit('news', { msg: 'hello world from socket.io!' });
+});
+
 var port = process.env.PORT || 5000;
-app.listen(port, function() {
+server.listen(port, function() {
   console.log("Listening on " + port);
 });
