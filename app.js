@@ -16,6 +16,7 @@ function isEmptyObject(obj) {
   return !Object.keys(obj).length;
 }
 
+var stored_sockets = {};
 //Get methods
 
 app.get('/api/games', function(req, res) {
@@ -35,18 +36,27 @@ app.get('/api/game/:name', function(req, res) {
 app.post('/api/game', function(req, res) {
     if (isEmptyObject(req.body)) {
         console.log(req.body + " is not valid json.  Sending 400.");
-        res.json(400);
+        res.json('need game to create yo!', 400);
     }
     api.addGame(req, res, db);
 });
 
 app.put('/api/game/:id/complete', function(req, res) {
-    if (isEmptyObject(req.body)) {
-        console.log(req.body + " is not valid json.  Sending 400.");
-        res.json(400);
-    }
     api.completeGame(req, res, db);
 });
+
+app.put('/api/game/:id/pause', function (req, res) {
+    api.pauseGame(req, res, db);
+})
+
+app.put('/api/game/:id/resume', function (req, res) {
+    api.resumeGame(req, res, db);
+})
+
+app.put('/api/game/:id/join', function(req, res) {
+    currentSession = req.body.playerId;
+    api.joinGame(req, res, db);
+})
 
 //Delete and Cleanup
 
@@ -58,8 +68,14 @@ app.put('/api/games/removecompleted', function(req, res) {
     api.removeExpiredGames(req, res, db);
 });
 
+app.get('/api/game/:id/alert', function(req, res) {
+    api.alertUsersInGame(req, res, db, stored_sockets);
+    res.json(200);
+});
+
 io.sockets.on('connection', function (socket) {
-  socket.emit('news', { msg: 'hello world from socket.io!' });
+    console.log(socket.id);
+    stored_sockets[socket.id] = socket;
 });
 
 var port = process.env.PORT || 5000;

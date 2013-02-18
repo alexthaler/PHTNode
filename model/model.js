@@ -14,7 +14,9 @@ exports.initialize = function(game) {
         game.target = 60
     }
     game.started = moment().format();
-    game.gameId = uuid.v1();
+    game.gameId = uuid.v1().replace(/-/g, "");
     game.completed = false;
+    game.paused = false;
+    game.players = [];
     return game;
 }

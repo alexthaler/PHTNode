@@ -6,6 +6,7 @@
 
     <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.4/angular.min.js"></script>
     <script src="http://documentcloud.github.com/underscore/underscore-min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="js/angular-pht.js"></script>
     <script src="js/moment.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
@@ -25,16 +26,16 @@
             </div>
         </div>
     </div>
-    <div class="row"> 
+    <div class="row" ng-controller="GameController"> 
         <div class="span6">
-            <div ng-controller="GameController">
+            <div>
                 <h3>Create a new Game</h3>
                 <input ng-model="newGameName" size="30" placeholder="Game Name"/>
                 <button ng-click="createGame(newGameName);">Create Game</button>
             </div>
         </div>
         <div class="span6">
-            <div ng-controller="GameController">
+            <div>
                 <h3>Games:</h3>
                 <select id="currentGames" size="8">
                     <option ng-repeat="game in currentGames">

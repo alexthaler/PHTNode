@@ -1,8 +1,9 @@
 var phtModule = angular.module('phtModule', []);
+
 phtModule.factory('gameService', function($rootScope) {
     return {
-        updateGame: function(game) {
-            $rootScope.$broadcast('updateGameInformation', game);
+        joinNewGame: function(game) {
+            $rootScope.$broadcast('joinNewGame', game);
         },
         refreshGameList: function() {
             $rootScope.$broadcast('refreshGameListDisplay');
@@ -10,10 +11,38 @@ phtModule.factory('gameService', function($rootScope) {
     };
 });
 
+phtModule.factory('socket', function ($rootScope) {
+    var socket = io.connect();
+    return {
+        on: function (eventName, callback) {
+            socket.on(eventName, function () {  
+                var args = arguments;
+                $rootScope.$apply(function () {
+                    callback.apply(socket, args);
+                });
+            });
+        },
+        emit: function (eventName, data, callback) {
+            socket.emit(eventName, data, function () {
+                var args = arguments;
+                $rootScope.$apply(function () {
+                    if (callback) {
+                        callback.apply(socket, args);
+                    }
+                });
+            })
+        },
+        joinGame: function (game) {
+            console.log('fooo dumb game ' + game.gameId);
+            $rootScope.$broadcast('connectToGame', socket, game);
+        }
+    };
+});
+
 function GameClockController($scope, $timeout, gameService) {
 
-    $scope.game = {}    
-    $scope.gameClockSeconds = 1;
+    $scope.game = {}; 
+    $scope.gameClockSeconds = 0;
     $scope.gameClockMinutes = 0;
 
     var myTimeout = 0;
@@ -33,19 +62,27 @@ function GameClockController($scope, $timeout, gameService) {
         $timeout.cancel(myTimeout);
     }
 
+    $scope.cancelGame = function() {
+        $timeout.cancel(myTimeout);
+        $scope.game = {};
+        $scope.gameClockSeconds = 0;
+        $scope.gameClockMinutes = 0;
+    }
+
     function zeroPad(num, places) {
         var zero = places - num.toString().length + 1;
         return Array(+(zero > 0 && zero)).join("0") + num;
     }
 
-    $scope.$on('updateGameInformation', function(event, game) {
+    $scope.$on('joinNewGame', function(event, game) {
+        $scope.cancelGame();
         $scope.game = game;
         myTimeout = $timeout($scope.onTimeout, 1000);
     });
 
 }
 
-function GameController($scope, $http, gameService) {
+function GameController($scope, $http, gameService, socket) {
 
     $scope.currentGames = []; 
 
@@ -61,19 +98,27 @@ function GameController($scope, $http, gameService) {
                 }
             }
         });
-        $scope.$apply(function() {
+        // $scope.$apply(function() {
             $scope.currentGames = newGameList;
-        })
+        // });
+    });
+
+    $scope.$on('connectToGame', function(event, socket, game) {
+        console.log('sessionId from callback ' + socket.socket.sessionid);
+        console.log('blah game ' + game);
+        $http.put('/api/game/' + game.gameId + '/join', {playerId:socket.socket.sessionid})
     });
 
     $scope.joinGame = function() {
         var e = document.getElementById('currentGames');
-        gameService.updateGame($scope.currentGames[e.selectedIndex]);
+        var game = $scope.currentGames[e.selectedIndex];
+        socket.joinGame(game);
+        gameService.joinNewGame(game);
     }
 
     $scope.createGame = function(gameName) {
         $http.post('/api/game', {name: gameName}).success(function(game) {
-            gameService.updateGame(game);
+            gameService.joinNewGame(game);
             gameService.refreshGameList();
         });
         $scope.newGameName = '';
@@ -81,7 +126,8 @@ function GameController($scope, $http, gameService) {
 
     gameService.refreshGameList();
 
-}
+    socket.on('gamePaused', function(data) {
+        alert(data.msg);
+    });
 
-GameClockController.$inject = ['$scope', '$timeout', 'gameService'];                
-GameController.$inject = ['$scope', '$http', 'gameService'];
+}
