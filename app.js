@@ -46,11 +46,11 @@ app.put('/api/game/:id/complete', function(req, res) {
 });
 
 app.put('/api/game/:id/pause', function (req, res) {
-    api.pauseGame(req, res, db);
+    api.pauseGame(req, res, db, stored_sockets);
 })
 
 app.put('/api/game/:id/resume', function (req, res) {
-    api.resumeGame(req, res, db);
+    api.resumeGame(req, res, db, stored_sockets);
 })
 
 app.put('/api/game/:id/join', function(req, res) {

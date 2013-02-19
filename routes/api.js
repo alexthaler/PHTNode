@@ -47,26 +47,28 @@ exports.addGame = function(req, res, db) {
     });
 };
 
-exports.pauseGame = function(req, res, db) {
-    db.games.find({gameId:req.params.id}, function(err, game) {
-        if (err || !game || game[0].paused) {
+exports.pauseGame = function(req, res, db, sockets) {
+    db.games.find({gameId:req.params.id}, function(err, games) {
+        if (err || !games || games[0].paused) {
             console.log('Game ' + req.params.id + ' not found or is already paused, returning 400');
             res.json('Game ' + req.params.id + ' not found or is already paused.', 400);
         } else {
-            db.games.update({gameId:req.params.id}, {$set:{paused:true}}, function(err, games) {
-                if(err || !games) {
+            db.games.update({gameId:req.params.id}, {$set:{paused:true}}, function(err) {
+                if(err) {
                     res.json('Error updating record', 500);
                 } else {
+
                     res.json('', 204);
                 }
             });
+            emitToPlayersInGame(sockets, games, 'pauseGame', {});
         }
     });
 };
 
-exports.resumeGame = function(req, res, db) {
-    db.games.find({gameId:req.params.id}, function(err, game) {
-        if (err || !game || !game[0].paused) {
+exports.resumeGame = function(req, res, db, sockets) {
+    db.games.find({gameId:req.params.id}, function(err, games) {
+        if (err || !games || !games[0].paused) {
             console.log('Game ' + req.params.id + ' not found or is not paused, returning 400.');
             res.json('Game ' + req.params.id + ' not found or is already paused.', 400);
         } else {
@@ -77,6 +79,7 @@ exports.resumeGame = function(req, res, db) {
                     res.json('', 204);
                 }
             });
+            emitToPlayersInGame(sockets, games, 'resumeGame', {});
         }
     });
 };
@@ -140,15 +143,20 @@ exports.deleteGame = function(req, res, db) {
 exports.alertUsersInGame = function(req, res, db, sockets) {
     db.games.find({gameId:req.params.id}, function(err, games) {
         if (!err) {
-            games.forEach(function(game) {
-                game.players.forEach(function(player) {
-                    if(sockets[player]) {
-                        sockets[player].emit('gamePaused', {msg:'fooawesomemessage'});    
-                    }
-                });
-            });
+            emitToPlayersInGame(sockets, games, 'gameAlert', {msg: 'fooawesomemessage'});
         }
     });
+};
+
+emitToPlayersInGame = function(sockets, games, gameEvent, gamePayload) {
+    console.log(games); 
+    games.forEach(function(game) {
+        game.players.forEach(function(player) {
+            if(sockets[player]) {
+                sockets[player].emit(gameEvent, gamePayload);    
+            }
+        });
+    });     
 };
 
 deleteGameInternal = function(id, db) {

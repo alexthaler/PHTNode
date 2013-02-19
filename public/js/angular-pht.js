@@ -39,13 +39,14 @@ phtModule.factory('socket', function ($rootScope) {
     };
 });
 
-function GameClockController($scope, $timeout, gameService) {
+function GameClockController($scope, $timeout, $http, gameService, socket) {
 
     $scope.game = {}; 
     $scope.gameClockSeconds = 0;
     $scope.gameClockMinutes = 0;
+    $scope.paused = false;
 
-    var myTimeout = 0;
+    var myTimeout = undefined;
 
     $scope.onTimeout = function(){
         var currtime = moment();
@@ -55,15 +56,29 @@ function GameClockController($scope, $timeout, gameService) {
     }
 
     $scope.resumeGame = function() {
-        myTimeout = $timeout($scope.onTimeout, 1000);
+        $http.put('/api/game/' + $scope.game.gameId + '/resume').success(function(){
+            resumeDisplay();
+        });
     }
 
     $scope.pauseGame = function() {
-        $timeout.cancel(myTimeout);
+        $http.put('/api/game/' + $scope.game.gameId + '/pause').success(function(){
+            pauseDisplay();    
+        });
+    }
+
+    function pauseDisplay() {
+        $scope.paused = true;
+        stopTimeout();  
+    }
+
+    function resumeDisplay() {
+        $scope.paused = false;    
+        startTimeout();
     }
 
     $scope.cancelGame = function() {
-        $timeout.cancel(myTimeout);
+        stopTimeout();        
         $scope.game = {};
         $scope.gameClockSeconds = 0;
         $scope.gameClockMinutes = 0;
@@ -77,8 +92,35 @@ function GameClockController($scope, $timeout, gameService) {
     $scope.$on('joinNewGame', function(event, game) {
         $scope.cancelGame();
         $scope.game = game;
-        myTimeout = $timeout($scope.onTimeout, 1000);
+        startTimeout();
     });
+
+    socket.on('pauseGame', function(data) {
+        if(!$scope.paused) {
+            console.log('pause alert received');
+            pauseDisplay();
+        }
+    });
+
+    socket.on('resumeGame', function(data) {
+        if($scope.paused) {
+            console.log('resume alert received');
+            resumeDisplay();
+        }
+    });
+
+    function stopTimeout() {
+        if(myTimeout) {
+            $timeout.cancel(myTimeout);
+            myTimeout = undefined;
+        }            
+    }
+
+    function startTimeout() {
+        if(!myTimeout) {
+            myTimeout = $timeout($scope.onTimeout, 1000);
+        }            
+    }
 
 }
 
@@ -98,9 +140,7 @@ function GameController($scope, $http, gameService, socket) {
                 }
             }
         });
-        // $scope.$apply(function() {
-            $scope.currentGames = newGameList;
-        // });
+        $scope.currentGames = newGameList;
     });
 
     $scope.$on('connectToGame', function(event, socket, game) {
@@ -126,7 +166,7 @@ function GameController($scope, $http, gameService, socket) {
 
     gameService.refreshGameList();
 
-    socket.on('gamePaused', function(data) {
+    socket.on('gameAlert', function(data) {
         alert(data.msg);
     });
 
