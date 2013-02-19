@@ -48,11 +48,16 @@ function GameClockController($scope, $timeout, $http, gameService, socket) {
 
     var myTimeout = undefined;
 
-    $scope.onTimeout = function(){
+
+    $scope.updateDisplay = function() {
         var currtime = moment();
         $scope.gameClockSeconds = zeroPad((currtime.diff(moment($scope.game.started), 'seconds') % 60) + 1, 2);
         $scope.gameClockMinutes = currtime.diff(moment($scope.game.started), 'minutes');
-        myTimeout = $timeout($scope.onTimeout, 1000);
+        if (!$scope.paused) {
+            myTimeout = $timeout($scope.updateDisplay, 1000);    
+        } else {
+            myTimeout = undefined;
+        }
     }
 
     $scope.resumeGame = function() {
@@ -92,7 +97,8 @@ function GameClockController($scope, $timeout, $http, gameService, socket) {
     $scope.$on('joinNewGame', function(event, game) {
         $scope.cancelGame();
         $scope.game = game;
-        startTimeout();
+        $scope.paused = game.paused;
+        startTimeout();    
     });
 
     socket.on('pauseGame', function(data) {
@@ -118,7 +124,7 @@ function GameClockController($scope, $timeout, $http, gameService, socket) {
 
     function startTimeout() {
         if(!myTimeout) {
-            myTimeout = $timeout($scope.onTimeout, 1000);
+            myTimeout = $timeout($scope.updateDisplay, 1000);
         }            
     }
 
